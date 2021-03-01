@@ -36,5 +36,17 @@ INSERT INTO departments (department_name)
 VALUES ("Management"), ("Sales"), ("Accounting"), ("Quality Assurance"), ("Customer Service"), ("Human Resources");
 
 INSERT INTO role (title, salary, department_id)
-VALUES ("Manager", 100000, 1), ("Salesman", 80000, 2), ("Accountant", 50000, 3), ("Inspector", 55000, 4), ("Service Representative", 30000, 5),("HR Representative", 45000, 6);
+VALUES ("Manager", 100000, 1), ("Salesperson", 80000, 2), ("Accountant", 50000, 3), ("Inspector", 55000, 4), ("Service Representative", 30000, 5),("HR Representative", 45000, 6);
 
+SELECT * FROM employee;
+
+SELECT employee.id, first_name, last_name, title, department_name, salary 
+FROM employee 
+LEFT JOIN role ON role_id = department_id 
+LEFT JOIN departments on role_id = departments.id;
+
+SELECT employee.id, first_name, last_name, title, salary 
+FROM employee 
+LEFT JOIN role ON role_id = department_id
+LEFT JOIN departments ON role_id = departments.id
+WHERE departments.id = 4;
