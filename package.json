@@ -19,7 +19,9 @@
   "homepage": "https://github.com/wdfhai/manage_my_employees#readme",
   "dependencies": {
     "canvas": "^2.6.1",
+    "dotenv": "^8.2.0",
     "inquirer": "^8.0.0",
-    "mysql2": "^2.2.5"
+    "mysql2": "^2.2.5",
+    "npm": "^7.6.0"
   }
 }
