@@ -1,8 +1,11 @@
 require('dotenv').config({ path: './process.env' });
 const fs = require ('fs');
+const chalk = require ('chalk');
+const emoji = require('node-emoji');
 const inquirer = require ('inquirer');
 const mysql = require ('mysql2');
 const questions = require ('./questions');
+
 
 let departmentIds = []
 let roleArray = [];
@@ -380,21 +383,27 @@ const viewBudget = () => {
         const getSalaries = res.map((item)=>{
             salaryArray.push(parseInt(item.salary));
         })
-        console.log('Total departmet budget is ' + salaryArray.reduce((a,b) => a+b) + '.');
+        console.log('Total department budget is ',`${emoji.get('heavy_dollar_sign')}`, + salaryArray.reduce((a,b) => a+b) + '.');
     action();
     });
 };
 
 const greeting =
-`        ___________________________________________________________________________________________
-       |                                                                                           |
-       |                                \\ MANAGE MY EMPLOYEES //                                  |
-       |___________________________________________________________________________________________|`;
+`
+
+
+            ${emoji.get('male-office-worker')}  ${emoji.get('female-office-worker')}  ${emoji.get('male-technologist')}  ${chalk.bgMagenta('Manage My Employees')}  ${(emoji.get('female-technologist'))}  ${emoji.get('female-office-worker')} ${emoji.get('male-office-worker')}
+
+
+`;
 
 const goodbye = 
-`        ___________________________________________________________________________________________
-       |                     Thank you for using Manage My Employees. Good bye!                    |
-       |___________________________________________________________________________________________|`;
+`
+
+        ${emoji.get('white_check_mark')}    ${chalk.blueBright('Thank you for using Manage My Employees.')}     ${emoji.get('white_check_mark')}
+
+
+`;
 
 console.clear();
 console.log(greeting);
