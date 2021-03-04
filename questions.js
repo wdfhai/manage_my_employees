@@ -6,11 +6,11 @@ const actions = [
     "Add Employee",
     "Add Department",
     "Add Role",
+    "Update Employee Role",
+    "Update Employee Manager",
     "Remove Employee",
     "Remove Department",
     "Remove Role",
-    "Update Employee Role",
-    "Update Employee Manager",
     "View Company Budget",
     "EXIT",
 ];
@@ -18,7 +18,7 @@ const actions = [
 const questions = [
     {
         name: 'start',
-        message: 'What would you like to do?',
+        message: '\nWhat would you like to do? \n',
         type: 'list',
         choices: actions,
     }
