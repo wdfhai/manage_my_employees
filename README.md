@@ -7,7 +7,7 @@
     Employee management made easy!
     <br />
     <br />
-    <a href="https://github.com/wdfhai/manage_my_employees">View Demo</a>
+    <a href="https://www.youtube.com/watch?v=u6sxVFFZ9Qk">View Demo</a>
     </p>
 </div>
 
