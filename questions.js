@@ -1,5 +1,6 @@
 const actions = [
     "View All Employees",
+    "View Company Budget",
     "View Employees By Department",
     "View Employees By Role",
     "View Employees By Manager",
@@ -9,16 +10,15 @@ const actions = [
     "Update Employee Role",
     "Update Employee Manager",
     "Remove Employee",
-    "Remove Department",
     "Remove Role",
-    "View Company Budget",
+    "Remove Department",
     "EXIT",
 ];
 
 const questions = [
     {
         name: 'start',
-        message: '\nWhat would you like to do? \n',
+        message: 'What would you like to do?\n',
         type: 'list',
         choices: actions,
     }

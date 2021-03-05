@@ -10,6 +10,9 @@ const questions = require ('./questions');
 let departmentIds = []
 let roleArray = [];
 let employeeArray = [];
+let empArray = [];
+let deptArray = [];
+let managerArray = [];
 
 const newEmployeeQuestions = [
     {
@@ -71,59 +74,30 @@ const getRoleArray = (roleArray) => {
     });
 }
 
-const getEmployeeById = () => {
-    let query = 'SELECT employee.id, first_name, last_name FROM employee';
-    connection.query(query, async (err, res) => {
-        if (err) throw err;
-        console.table(res);
-        const { employeeById } = await inquirer.prompt([{
-            name: 'employeeById',
-            message: 'Select employee by ID.',
-            type: 'number',
-        }]);
-        const employeeQuery = 'DELETE FROM employee WHERE id = ' + employeeById;
-        connection.query(employeeQuery, [{
-            id: employeeById,
-        }], async (err, res) => {
-                if (err) throw err;
-                if (!res.length) {
-                    console.log('Please choose a valid id');
-                } else {
-                    console.log('employee record deleted');
-                    action();
-                };
-    });
-});
-};
-
-const getEmployeeByName = () => {
-    let query = 'SELECT employee.id, first_name, last_name FROM employee';
-    connection.query(query, async (err, res) => {
-        if (err) throw err;
-        console.table(res);
-        const getEmployeeArray = res.map((employee)=>{
-            console.log(employee.first_name, employee.last_name)
-            employeeArray.push(employee.first_name + ' ' + employee.last_name);
-        })
-        console.log(employeeArray);
-        const { employeeByName } = await inquirer.prompt([{
-            name: 'employeeByName',
-            message: 'Select employee.',
-            type: 'list',
-            choices: employeeArray,
-        }]);
-        console.log(res);
-        const employeeQuery = `DELETE * FROM employee WHERE first_name = '${res.first_name}' AND last_name = '${employee.last_name}';`
-        connection.query(employeeQuery, async (err, res) => {
-                if (err) throw err;
-                if (!res.length) {
-                    console.log('Please choose a valid id');
-                } else {
-                    console.table(res)
-                };
-        })
-    });
-}
+// const getEmployeeById = () => {
+//     let query = 'SELECT employee.id, full_name FROM employee';
+//     connection.query(query, async (err, res) => {
+//         if (err) throw err;
+//         console.table(res);
+//         const { employeeById } = await inquirer.prompt([{
+//             name: 'employeeById',
+//             message: 'Select employee by ID.',
+//             type: 'number',
+//         }]);
+//         const employeeQuery = 'DELETE FROM employee WHERE id = ' + employeeById;
+//         connection.query(employeeQuery, [{
+//             id: employeeById,
+//         }], async (err, res) => {
+//                 if (err) throw err;
+//                 if (!res.length) {
+//                     console.log('Please choose a valid id');
+//                 } else {
+//                     console.log('employee record deleted');
+//                     action();
+//                 };
+//         });
+//     });
+// };
 
 const addDepartment = () => {
     console.log("\nAdding department...\n")
@@ -157,15 +131,32 @@ const addEmployee = () => {
     await inquirer
         .prompt(newEmployeeQuestions)
         .then((answer) => {
-            const newEmployeeQuery = 'INSERT INTO employee (first_name, last_name, role_id) VALUES ("' + answer.first_name + '", "' + answer.last_name + '",' + answer.role_id + ')';
-            connection.query(newEmployeeQuery, (err, res) => {
-                if (err) throw (err);
-                console.log('\nNew Employee added!\n');
-                // viewAllEmployees();
-                action();
+            let manQuery = 'SELECT employee.id, first_name, last_name FROM employee';
+            connection.query(manQuery, async (err, res) => {
+                if (err) throw err;
+                console.table(res);
+                let employeeIDArray = [];
+                const getEmployeeArray = res.map((employee)=>{
+                    employeeIDArray.push(employee.id);
+                })
+                await inquirer
+                    .prompt({
+                        name: 'managerById',
+                        type: 'list',
+                        message: "Select this employee's manager by ID.",
+                        choices: employeeIDArray,
+                    })
+                    .then((manager) => {                    
+                    const newEmployeeQuery = 'INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ("' + answer.first_name + '", "' + answer.last_name + '",' + answer.role_id + ',' + manager.managerById + ')';
+                    connection.query(newEmployeeQuery, (err, res) => {
+                        if (err) throw (err);
+                        console.log('\nNew Employee added!\n');
+                        action();
+                    });
+                });
             });
         });
-});
+    });
 };
 
 const addRole = () => {
@@ -196,11 +187,7 @@ const addRole = () => {
 
 const viewAllEmployees = () => {
     console.log("\nViewing All Employees\n");
-    let query = 'SELECT employee.id, first_name, last_name, title, department_name, salary, manager_id FROM employee';
-    query +=
-    ' LEFT JOIN role ON role_id = department_id';
-    query+=
-    ' LEFT JOIN departments ON role_id = departments.id ORDER BY role_id;';
+    let query = 'SELECT employee.id, employee.full_name, role.title, role.salary, departments.department_name, employee2.full_name AS "manager" FROM employee LEFT JOIN employee AS employee2 ON employee.manager_id = employee2.id LEFT JOIN role ON employee.role_id = role.id LEFT JOIN departments ON employee.role_id = departments.id';
     connection.query(query, async (err, res) => {
         if (err) throw err;
         console.table(res);
@@ -219,14 +206,14 @@ const viewByDepartment = () => {
         });
     await inquirer
     .prompt({
-      name: 'department',
-      type: 'list',
-      message: 'Select the department id you would like to view?',
-      choices: departmentIds,
+        name: 'department',
+        type: 'list',
+        message: 'Select the department id you would like to view?',
+        choices: departmentIds,
     })
     .then((answer) => {
         connection.query(
-            'SELECT employee.id, first_name, last_name, title, department_name, salary FROM employee LEFT JOIN role ON role_id = department_id LEFT JOIN departments on role_id = departments.id WHERE departments.id = ' + answer.department,
+            'SELECT employee.id, full_name, title, department_name, salary FROM employee LEFT JOIN role ON role_id = department_id LEFT JOIN departments on role_id = departments.id WHERE departments.id = ' + answer.department,
             (err,res) => {
             console.log("Viewing Employees By Department")
             console.table(res)
@@ -238,7 +225,7 @@ const viewByDepartment = () => {
 };
 
 const viewByRole = () => {
-    console.log("\nViewing Roles...\n");
+    console.log("Viewing Roles...\n");
     let query = 'SELECT id, title FROM role';
     connection.query(query, async (err, res) => {
         if (err) throw err;
@@ -251,7 +238,7 @@ const viewByRole = () => {
             type: 'list',
             choices: roleArray,
         });
-        let roleQuery = 'SELECT employee.id, first_name, last_name, title FROM employee LEFT JOIN role ON role_id = role.id WHERE title = "' + roleByTitle + '"';
+        let roleQuery = 'SELECT employee.id, full_name, title FROM employee LEFT JOIN role ON role_id = role.id WHERE title = "' + roleByTitle + '"';
         connection.query(roleQuery, async (err, res) => {
                 if (err) throw err;
                 if (!res.length) {
@@ -266,7 +253,7 @@ const viewByRole = () => {
 
 const updateRole = () => {
     console.log("\nUpdating Employee Role...\n")
-    let query = 'SELECT employee.id, first_name, last_name, title, department_name, salary FROM employee';
+    let query = 'SELECT employee.id, full_name, title, department_name, salary FROM employee';
     query +=
     ' LEFT JOIN role ON role_id = department_id';
     query+=
@@ -297,91 +284,188 @@ const updateRole = () => {
 
 
 
-// const updateManager = () => {
-//     console.log("\nUpdating Employee Manager...\n");
-//     let query = 'SELECT employee.id, first_name, last_name, title, department_name, salary FROM employee';
-//     query +=
-//     ' LEFT JOIN role ON role_id = department_id';
-//     query+=
-//     ' LEFT JOIN departments ON role_id = departments.id ORDER BY role_id;';
-//     connection.query(query, async (err, res) => {
-//         if (err) throw err;
-//         console.table(res);
-//         const { employeeById, new_role } = await inquirer.prompt([{
-//             name: 'employeeById',
-//             message: 'Select employee by ID.',
-//             type: 'number',
-//         },{
-//             name: 'new_manager',
-//             message: 'Choose the new manager.',
-//             type: 'list',
-//             choices: employeeArray,
-//         }]);
-//         const updateRoleQuery = 'UPDATE employee LEFT JOIN role ON role_id = department_id SET title = "?" WHERE employee.id = ?;';
-//         connection.query(updateRoleQuery, [new_role, employeeById], async (err, res) => {
-//                 if (err) throw err;
-//                 console.log(res);
-//                 console.log('Employee role updated');
-//                 action();
-//         });
-//     });
-// };
-const viewByManager = () => {console.log("\nViewing Employees By Manager\n")};
-
-const removeDepartment = () => {console.log("\nRemoving Department...\n")
-let query = 'SELECT employee.id, first_name, last_name FROM employee';
-connection.query(query, async (err, res) => {
-    if (err) throw err;
-    console.table(res);
-    const getEmployeeArray = res.map((employee)=>{
-        console.log(employee.first_name, employee.last_name)
-        employeeArray.push(employee.first_name + ' ' + employee.last_name);
-    })
-    console.log(employeeArray);
-    const { employeeByName } = await inquirer.prompt([{
-        name: 'employeeByName',
-        message: 'Select employee.',
+const updateManager = () => {
+    console.log("\nUpdating Employee Manager...\n");
+    let query = 'SELECT employee.id, full_name FROM employee';
+    connection.query(query, async (err, res) => {
+        if (err) throw err;
+        const getEmployeeArray = res.map((employee)=>{
+            const employeeData = {
+                name: employee.full_name,
+                value: employee.id,
+            }
+            employeeArray.push(employeeData);
+        })
+        await inquirer
+        .prompt({
+        name: 'employeeID',
         type: 'list',
+        message: "Which employee's manager would you like to update?",
         choices: employeeArray,
-    }]);
-    console.log(res);
-});
-};
+        })
+        .then((answer) => {
+            let query = 'SELECT employee.id, full_name FROM employee';
+            connection.query(query, async (err, res) => {
+                if (err) throw err;
+                let employeeArray2 = [];
+                const getEmployeeArray2 = res.map((employee)=>{
+                    const employeeData = {
+                        name: employee.full_name,
+                        value: employee.id,
+                    }
+                    employeeArray2.push(employeeData);
+                });
+                await inquirer
+                .prompt({
+                    name: 'managerID',
+                    type: 'list',
+                    message: 'Select the ID of the employee you would like to assign as manager',
+                    choices: employeeArray2,
+                })
+                .then((ans)=>{
+                    let query2 = 'UPDATE employee SET manager_id = ' + ans.managerID + ' WHERE employee.id = ' + answer.employeeID;
+                    connection.query(query2, async (err,res) => {
+                        console.log("Employee manager updated")
+                        action();
+                        })
+                    })
+                })
+            }) 
+        });
+    }
 
-const removeRole = () => {console.log("Removing Role")};
-
-const removeEmployee = () => {
-    console.log("Removing Employee")
-    let query = 'SELECT employee.id, first_name, last_name FROM employee';
+const viewByManager = () => {
+    console.log("\nViewing Employees By Manager\n");
+    let query = 'SELECT employee.id, full_name, title FROM employee LEFT JOIN role ON role_id = role.id WHERE title = "Manager"';
     connection.query(query, async (err, res) => {
         if (err) throw err;
         console.table(res);
-        const { employeeById } = await inquirer.prompt([{
-            name: 'employeeById',
-            message: 'Select employee by ID.',
+        const getManagerArray = res.map((manager) => {
+            managerArray.push(manager.id);
+        })
+        const { managerById } = await inquirer.prompt({
+            name: 'managerById',
+            message: 'Select the ID of the manager you would like to view.',
+            type: 'list',
+            choices: managerArray,
+        });
+        if (!managerArray.length){
+            console.log('Looks like no managers have been assigned at this time.')
+        } else {
+            let managerQuery = 'SELECT employee.id, full_name, title, manager_id FROM employee '
+            query +=
+            ' LEFT JOIN role ON role_id = role.id WHERE manager_id = ' + managerById;
+            connection.query(managerQuery, async (err, res) => {
+                    if (err) throw err;
+                    if (!res.length) {
+                        console.log('\nPlease choose a valid ID!\n');
+                    } else {
+                        console.table(res)
+                    };
+                    action();
+            });
+        }
+    });
+};
+
+const removeDepartment = () => {
+    console.log("\nRemoving Department and linked data...\n")
+    let query = 'SELECT id, department_name FROM departments';
+    connection.query(query, async (err, res) => {
+        if (err) throw err;
+        console.table(res);
+        const getDeptArray = res.map((dept) => {
+            deptArray.push(dept.id);
+        })
+        const { deptById } = await inquirer.prompt([{
+            name: 'deptById',
+            message: "Type in the ID of the department you would like to remove.",
             type: 'number',
         }]);
-        const employeeQuery = 'DELETE FROM employee WHERE id = ' + employeeById;
-        connection.query(employeeQuery, [{
-            id: employeeById,
-        }], async (err, res) => {
-                if (err) throw err;
-                console.log('Employee record deleted');
-                action();
-        });
+        if (!deptArray.includes(deptById)) {
+            console.log('ID not found. Please try again.');
+            removeDepartment();
+        } else {
+            const deptQuery = 'DELETE FROM departments WHERE id = ' + deptById;
+            connection.query(deptQuery, async (err, res) => {
+                    if (err) throw err;
+                    console.log('\nDepartment record deleted!\n');
+                    action();
+            });
+        };
+    });
+};
+
+const removeRole = () => {
+    console.log("\nNow Removing Role and linked Salary data...\n");
+    let query = 'SELECT id, title FROM role';
+    connection.query(query, async (err, res) => {
+        if (err) throw err;
+        console.table(res);
+        const getRoleArray = res.map((role) => {
+            roleArray.push(role.id);
+        })
+        const { roleById } = await inquirer.prompt([{
+            name: 'roleById',
+            message: "Type in the ID of the Role you wish to remove.",
+            type: 'number',
+        }]);
+        if (!roleArray.includes(roleById)) {
+            console.log('\nID not found. Please try again.\n');
+            removeRole();
+        } else {
+            const roleQuery = 'DELETE FROM role WHERE id = ' + roleById;
+            connection.query(roleQuery, async (err, res) => {
+                    if (err)throw err;
+                    console.log('\nRole deleted!\n');
+                    action();
+            });
+        };
+    });
+};
+
+const removeEmployee = () => {
+    console.log("Now Removing Employee...")
+    let query = 'SELECT employee.id, full_name FROM employee';
+    connection.query(query, async (err, res) => {
+        if (err) throw err;
+        console.table(res);
+        const getEmpArray = res.map((emp) => {
+            empArray.push(emp.id);
+        })
+        const { employeeById } = await inquirer.prompt([{
+            name: 'employeeById',
+            message: "Type in employee's ID.",
+            type: 'number',
+        }]);
+        if (!empArray.includes(employeeById)) {
+            console.log('ID not found. Please try again.');
+            removeEmployee();
+        } else {
+            const employeeQuery = 'DELETE FROM employee WHERE id = ' + employeeById;
+            connection.query(employeeQuery, [{
+                id: employeeById,
+            }], async (err, res) => {
+                    if (err) {
+                        console.log(`${emoji.get('exclamation')}`);
+                        throw err};
+                    console.log('Employee record deleted');
+                    action();
+            });
+        };
     });
 };
 
 const viewBudget = () => {
     console.log("Viewing Company Budget")
-    let query = 'SELECT employee.id, first_name, last_name, title, salary FROM employee';
+    let query = 'SELECT employee.id, full_name, title, salary FROM employee';
     query +=
     ' LEFT JOIN role ON role_id = department_id';
     connection.query(query, async (err, res) => {
         if (err) throw err;
         let salaryArray = [];
         const getSalaries = res.map((item)=>{
-            salaryArray.push(parseInt(item.salary));
+            salaryArray.push((parseInt(item.salary)) || 0);
         })
         console.log('Total department budget is ',`${emoji.get('heavy_dollar_sign')}`, + salaryArray.reduce((a,b) => a+b) + '.');
     action();
@@ -392,7 +476,7 @@ const greeting =
 `
 
 
-            ${emoji.get('male-office-worker')}  ${emoji.get('female-office-worker')}  ${emoji.get('male-technologist')}  ${chalk.bgMagenta('Manage My Employees')}  ${(emoji.get('female-technologist'))}  ${emoji.get('female-office-worker')} ${emoji.get('male-office-worker')}
+            ${emoji.get('male-office-worker')}  ${emoji.get('female-judge')}  ${emoji.get('male-technologist')}  ${chalk.bgBlue('Manage My Employees')}  ${(emoji.get('female-doctor'))}  ${emoji.get('female-office-worker')}  ${emoji.get('male-construction-worker')}
 
 
 `;
