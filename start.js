@@ -65,6 +65,7 @@ const connection = mysql.createConnection({
 });
 
 const addDepartment = () => {
+    console.clear();
     console.log("\nAdding department...\n")
     let query = 'SELECT id, department_name FROM departments';
     connection.query(query, async (err, res) => {
@@ -87,6 +88,7 @@ const addDepartment = () => {
 };
 
 const addEmployee = () => {
+    console.clear();
     console.log('\nAdding employee...\n')
     let query = 'SELECT id, title FROM role';
     connection.query(query, async (err, res) => {
@@ -133,6 +135,7 @@ const addEmployee = () => {
 };
 
 const addRole = () => {
+    console.clear();
     console.log('\nAdding Role...\n')
     let existingRoles;
     let roleQuery = 'SELECT * FROM departments';
@@ -161,6 +164,7 @@ const addRole = () => {
 };
 
 const viewAllEmployees = () => {
+    console.clear();
     console.log("\nViewing All Employees\n");
     let query = 'SELECT employee.id, employee.full_name, role.title, role.salary, departments.department_name, employee2.full_name AS "manager" FROM employee LEFT JOIN employee AS employee2 ON employee.manager_id = employee2.id LEFT JOIN role ON employee.role_id = role.id LEFT JOIN departments ON employee.role_id = departments.id';
     connection.query(query, async (err, res) => {
@@ -171,6 +175,7 @@ const viewAllEmployees = () => {
 };
 
 const viewByDepartment = () => {
+    console.clear();
     console.log("\nViewing Departments...\n");
     let query = 'SELECT id, department_name FROM departments';
     connection.query(query, async (err, res) => {
@@ -203,6 +208,7 @@ const viewByDepartment = () => {
 };
 
 const viewByRole = () => {
+    console.clear();
     console.log("\nViewing Roles...\n");
     let query = 'SELECT id, title FROM role';
     connection.query(query, async (err, res) => {
@@ -234,6 +240,7 @@ const viewByRole = () => {
 };
 
 const updateRole = () => {
+    console.clear();
     console.log("\nUpdating Employee Role...\n")
     let query = 'SELECT employee.id, full_name, title, department_name, salary FROM employee';
     query +=
@@ -266,6 +273,7 @@ const updateRole = () => {
 
 
 const updateManager = () => {
+    console.clear();
     console.log("\nUpdating Employee Manager...\n");
     let query = 'SELECT employee.id, full_name FROM employee';
     connection.query(query, async (err, res) => {
@@ -316,6 +324,7 @@ const updateManager = () => {
     }
 
 const viewByManager = () => {
+    console.clear();
     console.log("\nViewing Employees By Manager...\n");
     let query = 'SELECT employee.id, employee2.full_name AS "manager" FROM employee LEFT JOIN employee AS employee2 ON employee.manager_id = employee2.id LEFT JOIN role ON employee.role_id = role.id LEFT JOIN departments ON employee.role_id = departments.id WHERE employee2.full_name IS NOT NULL';
     connection.query(query, async (err, res) => {
@@ -351,6 +360,7 @@ const viewByManager = () => {
 };
 
 const removeDepartment = () => {
+    console.clear();
     console.log("\nRemoving Department and linked data...\n")
     let query = 'SELECT id, department_name FROM departments';
     connection.query(query, async (err, res) => {
@@ -379,6 +389,7 @@ const removeDepartment = () => {
 };
 
 const removeRole = () => {
+    console.clear();
     console.log("\nNow Removing Role and linked Salary data...\n");
     let query = 'SELECT id, title FROM role';
     connection.query(query, async (err, res) => {
@@ -407,6 +418,7 @@ const removeRole = () => {
 };
 
 const removeEmployee = () => {
+    console.clear();
     console.log("Now Removing Employee...")
     let query = 'SELECT employee.id, full_name FROM employee';
     connection.query(query, async (err, res) => {
@@ -439,6 +451,7 @@ const removeEmployee = () => {
 };
 
 const viewBudget = () => {
+    console.clear();
     console.log("\nViewing Company Budget...")
     let query = 'SELECT employee.id, full_name, title, salary FROM employee';
     query +=
