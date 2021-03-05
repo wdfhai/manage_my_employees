@@ -6,8 +6,8 @@ const inquirer = require ('inquirer');
 const mysql = require ('mysql2');
 const questions = require ('./questions');
 
-
-let departmentIds = []
+let departmentIds = [];
+let departmentNames = []
 let roleArray = [];
 let employeeArray = [];
 let empArray = [];
@@ -36,7 +36,7 @@ const newRoleQuestions = [
         name: 'new_role_department_id',
         type: 'list',
         message: 'Select the ID for the department the new role belongs.',
-        choices: departmentIds,
+        choices: departmentNames,
     },{
         name: 'new_role_title',
         type: 'input',
@@ -138,13 +138,15 @@ const addRole = () => {
     let roleQuery = 'SELECT * FROM departments';
     connection.query(roleQuery, async (err,res) => {
         const getDeptIds = res.map(function deptNames(dept) {
-            departmentIds.push(dept.id)});
-        console.log(departmentIds);
+            const deptData = {
+                name: dept.department_name,
+                value: dept.id,
+            }
+            departmentNames.push(deptData)});
     });
     let query = 'SELECT departments.id, department_name, title, salary FROM departments LEFT JOIN role ON departments.id = department_id';
     connection.query(query, async (err, res) => {
         if (err) throw err;    
-        console.table(res);
     await inquirer
         .prompt(newRoleQuestions)
         .then((answer) => {
@@ -253,8 +255,7 @@ const updateRole = () => {
         const updateRoleQuery = 'UPDATE employee LEFT JOIN role ON role_id = department_id SET title = "?" WHERE employee.id = ?;';
         connection.query(updateRoleQuery, [new_role, employeeById], async (err, res) => {
                 if (err) throw err;
-                console.log(res);
-                console.log('Employee role updated');
+                console.log('\nEmployee role updated.\n');
                 action();
         });
     });
@@ -305,7 +306,7 @@ const updateManager = () => {
                 .then((ans)=>{
                     let query2 = 'UPDATE employee SET manager_id = ' + ans.managerID + ' WHERE employee.id = ' + answer.employeeID;
                     connection.query(query2, async (err,res) => {
-                        console.log("Employee manager updated")
+                        console.log("\nEmployee manager updated.\n")
                         action();
                         })
                     })
@@ -315,7 +316,7 @@ const updateManager = () => {
     }
 
 const viewByManager = () => {
-    console.log("\nViewing Employees By Manager\n");
+    console.log("\nViewing Employees By Manager...\n");
     let query = 'SELECT employee.id, employee2.full_name AS "manager" FROM employee LEFT JOIN employee AS employee2 ON employee.manager_id = employee2.id LEFT JOIN role ON employee.role_id = role.id LEFT JOIN departments ON employee.role_id = departments.id WHERE employee2.full_name IS NOT NULL';
     connection.query(query, async (err, res) => {
         if (err) throw err;
@@ -323,7 +324,8 @@ const viewByManager = () => {
             managerArray.push(manager.manager);
         })
         if (!managerArray.length){
-            console.log('Looks like no managers have been assigned at this time.')
+            console.log('\nLooks like no managers have been assigned at this time.\n')
+            action();
         } else {
             await inquirer
             .prompt({
@@ -437,7 +439,7 @@ const removeEmployee = () => {
 };
 
 const viewBudget = () => {
-    console.log("Viewing Company Budget")
+    console.log("\nViewing Company Budget...")
     let query = 'SELECT employee.id, full_name, title, salary FROM employee';
     query +=
     ' LEFT JOIN role ON role_id = department_id';
@@ -447,7 +449,7 @@ const viewBudget = () => {
         const getSalaries = res.map((item)=>{
             salaryArray.push((parseInt(item.salary)) || 0);
         })
-        console.log('Total department budget is ',`${emoji.get('heavy_dollar_sign')}`, + salaryArray.reduce((a,b) => a+b) + '.');
+        console.log('\nYour total company budget is $' + salaryArray.reduce((a,b) => a+b) + '.\n');
     action();
     });
 };

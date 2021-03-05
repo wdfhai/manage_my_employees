@@ -39,27 +39,3 @@ VALUES ("Manager", 100000, 1), ("Salesperson", 80000, 2), ("Accountant", 50000, 
 
 INSERT INTO employee (first_name, last_name, role_id)
 VALUES ("Michael", "Scott", 1), ("Dwight", "Schrute", 2), ("Jim", "Halpert", 2), ("Stanley", "Hudson", 2),("Phyllis", "Vance", 2), ("Oscar", "Martinez", 3), ("Angela", "Martin", 3), ("Kevin", "Malone", 3), ("Creed", "Bratton", 4), ("Kelly", "Kapoor", 5),("Toby", "Flenderson", 6);
-
-SELECT * FROM employee
-LEFT JOIN role ON role_id = department_id 
-LEFT JOIN departments ON role_id = departments.id;
-
-SELECT employee.id, employee.full_name FROM employee LEFT JOIN employee AS employee2 ON employee.manager_id = employee2.id LEFT JOIN role ON employee.role_id = role.id LEFT JOIN departments ON employee.role_id = departments.id WHERE employee2.full_name IS NOT NULL;
-
-SELECT employee.id, first_name, last_name, title, department_name, salary, manager_id
-FROM employee 
-LEFT JOIN role ON role_id = department_id 
-LEFT JOIN departments ON role_id = departments.id;
-
-UPDATE employee SET employee.manager_id =1 WHERE employee.id = 2;
-SELECT employee.id, employee.full_name, role.title, role.salary,  employee2.full_name AS "manager"
-FROM employee 
-LEFT JOIN employee AS employee2 ON employee.manager_id = employee2.id
-LEFT JOIN role ON employee.role_id = role.id
-LEFT JOIN departments ON employee.role_id = departments.id;
-
-SELECT employee.id, first_name, last_name, title, department_name, salary FROM employee
-LEFT JOIN role ON role_id = department_id
-LEFT JOIN departments ON role_id = departments.id
-WHERE role.id = 2;
-
