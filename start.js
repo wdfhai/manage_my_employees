@@ -64,16 +64,6 @@ const connection = mysql.createConnection({
     database: 'manageDB',
 });
 
-const getRoleArray = (roleArray) => { 
-    let query = 'SELECT id, title FROM role';
-    connection.query(query, async (err, res) => {
-        if (err) throw err;
-        const populateRoleArray = res.map((role) => {
-            roleArray.push(role.id);
-        });
-    });
-}
-
 const addDepartment = () => {
     console.log("\nAdding department...\n")
     let query = 'SELECT id, department_name FROM departments';
@@ -97,22 +87,30 @@ const addDepartment = () => {
 };
 
 const addEmployee = () => {
-    getRoleArray(roleArray);
     console.log('\nAdding employee...\n')
-    const query = 'SELECT role.id, title FROM role';
+    let query = 'SELECT id, title FROM role';
     connection.query(query, async (err, res) => {
-        if (err) throw err;    
-        console.table(res);
+        if (err) throw err;
+        const populateRoleArray = res.map((role) => {
+            const roleData = {
+                name: role.title,
+                value: role.id
+            }
+            roleArray.push(roleData);
+        });
     await inquirer
         .prompt(newEmployeeQuestions)
         .then((answer) => {
-            let manQuery = 'SELECT employee.id, first_name, last_name FROM employee';
+            let manQuery = 'SELECT id, full_name FROM employee';
             connection.query(manQuery, async (err, res) => {
                 if (err) throw err;
-                console.table(res);
                 let employeeIDArray = [];
                 const getEmployeeArray = res.map((employee)=>{
-                    employeeIDArray.push(employee.id);
+                    const empManData = {
+                        name: employee.full_name,
+                        value: employee.id,
+                    }
+                    employeeIDArray.push(empManData);
                 })
                 await inquirer
                     .prompt({
