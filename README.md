@@ -44,7 +44,7 @@ Yes, you will need Node and NPM installed, then install all dependencies using '
 
 ### Usage
 
-Use 'NPM install' to install all dependencies, then run 'node start' to run the application. Then follow the prompts to add, update or delete employee data.
+Use 'npm install' to install all dependencies, then run 'node start' to run the application. Then follow the prompts to add, update or delete employee data.
 
 ### Contributing
 

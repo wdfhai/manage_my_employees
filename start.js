@@ -74,31 +74,6 @@ const getRoleArray = (roleArray) => {
     });
 }
 
-// const getEmployeeById = () => {
-//     let query = 'SELECT employee.id, full_name FROM employee';
-//     connection.query(query, async (err, res) => {
-//         if (err) throw err;
-//         console.table(res);
-//         const { employeeById } = await inquirer.prompt([{
-//             name: 'employeeById',
-//             message: 'Select employee by ID.',
-//             type: 'number',
-//         }]);
-//         const employeeQuery = 'DELETE FROM employee WHERE id = ' + employeeById;
-//         connection.query(employeeQuery, [{
-//             id: employeeById,
-//         }], async (err, res) => {
-//                 if (err) throw err;
-//                 if (!res.length) {
-//                     console.log('Please choose a valid id');
-//                 } else {
-//                     console.log('employee record deleted');
-//                     action();
-//                 };
-//         });
-//     });
-// };
-
 const addDepartment = () => {
     console.log("\nAdding department...\n")
     let query = 'SELECT id, department_name FROM departments';
@@ -200,20 +175,23 @@ const viewByDepartment = () => {
     let query = 'SELECT id, department_name FROM departments';
     connection.query(query, async (err, res) => {
         if (err) throw err;
-        console.table(res);
         const getDepartmentIds = res.map ((dept) => {
-        departmentIds.push(dept.id);
+            const deptData = {
+                name: dept.department_name,
+                value: dept.id,
+            };
+        departmentIds.push(deptData);
         });
     await inquirer
     .prompt({
-        name: 'department',
+        name: 'departmentID',
         type: 'list',
-        message: 'Select the department id you would like to view?',
+        message: 'Select the department you would like to view?',
         choices: departmentIds,
     })
     .then((answer) => {
         connection.query(
-            'SELECT employee.id, full_name, title, department_name, salary FROM employee LEFT JOIN role ON role_id = department_id LEFT JOIN departments on role_id = departments.id WHERE departments.id = ' + answer.department,
+            'SELECT employee.id, full_name, title, department_name, salary FROM employee LEFT JOIN role ON role_id = department_id LEFT JOIN departments on role_id = departments.id WHERE departments.id = ' + answer.departmentID,
             (err,res) => {
             console.log("Viewing Employees By Department")
             console.table(res)
@@ -225,29 +203,33 @@ const viewByDepartment = () => {
 };
 
 const viewByRole = () => {
-    console.log("Viewing Roles...\n");
+    console.log("\nViewing Roles...\n");
     let query = 'SELECT id, title FROM role';
     connection.query(query, async (err, res) => {
         if (err) throw err;
         const getRoleArray = res.map((role) => {
-            roleArray.push(role.title);
+            const roleData = {
+                name: role.title,
+                value: role.id,
+            }
+            roleArray.push(roleData);
         })
-        const { roleByTitle } = await inquirer.prompt({
-            name: 'roleByTitle',
+        await inquirer
+        .prompt({
+            name: 'roleID',
             message: 'Enter role to view.',
             type: 'list',
             choices: roleArray,
-        });
-        let roleQuery = 'SELECT employee.id, full_name, title FROM employee LEFT JOIN role ON role_id = role.id WHERE title = "' + roleByTitle + '"';
-        connection.query(roleQuery, async (err, res) => {
-                if (err) throw err;
-                if (!res.length) {
-                    console.log('\nPlease choose a valid title!\n');
-                } else {
-                    console.table(res)
-                };
+        })
+        .then((answer) => {
+            connection.query(
+                'SELECT employee.id, full_name, title FROM employee LEFT JOIN role ON role_id = role.id WHERE role_id = ' + answer.roleID,
+                (err,res) => {
+                console.log("Viewing Employees By Department")
+                console.table(res)
                 action();
-        });
+            })
+        }) 
     });
 };
 
@@ -336,35 +318,35 @@ const updateManager = () => {
 
 const viewByManager = () => {
     console.log("\nViewing Employees By Manager\n");
-    let query = 'SELECT employee.id, full_name, title FROM employee LEFT JOIN role ON role_id = role.id WHERE title = "Manager"';
+    let query = 'SELECT employee.id, employee2.full_name AS "manager" FROM employee LEFT JOIN employee AS employee2 ON employee.manager_id = employee2.id LEFT JOIN role ON employee.role_id = role.id LEFT JOIN departments ON employee.role_id = departments.id WHERE employee2.full_name IS NOT NULL';
     connection.query(query, async (err, res) => {
         if (err) throw err;
-        console.table(res);
         const getManagerArray = res.map((manager) => {
-            managerArray.push(manager.id);
+            managerArray.push(manager.manager);
         })
-        const { managerById } = await inquirer.prompt({
-            name: 'managerById',
-            message: 'Select the ID of the manager you would like to view.',
-            type: 'list',
-            choices: managerArray,
-        });
         if (!managerArray.length){
             console.log('Looks like no managers have been assigned at this time.')
         } else {
-            let managerQuery = 'SELECT employee.id, full_name, title, manager_id FROM employee '
-            query +=
-            ' LEFT JOIN role ON role_id = role.id WHERE manager_id = ' + managerById;
-            connection.query(managerQuery, async (err, res) => {
+            await inquirer
+            .prompt({
+                name: 'managerById',
+                message: 'Select the manager you would like to view.',
+                type: 'list',
+                choices: managerArray,
+            })
+            .then((answer) => {
+                let managerQuery = 'SELECT employee.id, employee.full_name, employee2.full_name AS "manager", title FROM employee LEFT JOIN employee AS employee2 ON employee.manager_id = employee2.id LEFT JOIN role ON employee.role_id = role.id WHERE employee2.full_name = "' + answer.managerById + '"';
+                connection.query(managerQuery, async (err, res) => {
                     if (err) throw err;
                     if (!res.length) {
-                        console.log('\nPlease choose a valid ID!\n');
+                        console.log('\nPlease choose a valid name!\n');
                     } else {
                         console.table(res)
                     };
                     action();
+                });
             });
-        }
+        };
     });
 };
 

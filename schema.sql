@@ -44,16 +44,17 @@ SELECT * FROM employee
 LEFT JOIN role ON role_id = department_id 
 LEFT JOIN departments ON role_id = departments.id;
 
+SELECT employee.id, employee.full_name FROM employee LEFT JOIN employee AS employee2 ON employee.manager_id = employee2.id LEFT JOIN role ON employee.role_id = role.id LEFT JOIN departments ON employee.role_id = departments.id WHERE employee2.full_name IS NOT NULL;
+
 SELECT employee.id, first_name, last_name, title, department_name, salary, manager_id
 FROM employee 
 LEFT JOIN role ON role_id = department_id 
 LEFT JOIN departments ON role_id = departments.id;
 
 UPDATE employee SET employee.manager_id =1 WHERE employee.id = 2;
--- INSERT INTO employee (manager_id) VALUE ("1") WHERE employee.id = 2;
-SELECT employee.id, employee.first_name, employee.last_name, role.title, role.salary, employee2.full_name AS 'manager'
+SELECT employee.id, employee.full_name, role.title, role.salary,  employee2.full_name AS "manager"
 FROM employee 
-LEFT JOIN employee AS employee2 ON employee2.manager_id = employee.id
+LEFT JOIN employee AS employee2 ON employee.manager_id = employee2.id
 LEFT JOIN role ON employee.role_id = role.id
 LEFT JOIN departments ON employee.role_id = departments.id;
 
